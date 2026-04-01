@@ -255,6 +255,7 @@ void run_jobs(int n_workers, int n_jobs, uint32_t trials, uint32_t sim_type) {
     printf("Final Combined Estimate: %.8f\n", final_estimate);
     printf("True Value: %.8f\n", true_value);
     printf("Absolute Error: %.8f\n", fabs(final_estimate - true_value));
+    }
 
 int main(int argc, char *argv[]) {
     int n_workers = DEFAULT_WORKERS;
@@ -263,7 +264,6 @@ int main(int argc, char *argv[]) {
     uint32_t sim_type = SIM_PI;
 
     signal(SIGPIPE, SIG_IGN);
-
     int opt;
     while ((opt = getopt(argc, argv, "w:t:j:s:")) != -1) {
         switch (opt) {

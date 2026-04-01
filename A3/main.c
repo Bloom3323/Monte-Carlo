@@ -222,22 +222,39 @@ void run_jobs(int n_workers, int n_jobs, uint32_t trials, uint32_t sim_type) {
     // combine all raw totals for the final estimate
     uint64_t total_aggregate = 0;
     uint64_t total_trials = 0;
+    double true_value = 0.0;
+
+    if (sim_type == SIM_PI) true_value = acos(-1.0);
+    else if (sim_type == SIM_E) true_value = exp(1.0);
+    else true_value = sqrt(2.0);
+
+    printf("Simulation: ");
+    if (sim_type == SIM_PI) printf("pi\n");
+    else if (sim_type == SIM_E) printf("e\n");
+    else printf("sqrt(2)\n");
+
+    printf("Workers: %d, Jobs: %d, Trials/job: %u\n\n", n_workers, n_jobs, trials);
+    printf("%-5s %-7s %s\n", "Job", "Worker", "Estimate");
 
     for (int i = 0; i < n_jobs; i++) {
         total_aggregate += results[i].aggregate_value;
         total_trials += results[i].trials;
-        printf("Job %u (Worker %u): estimate = %f\n", 
-               results[i].job_id, results[i].worker_id, results[i].estimate);
+        printf("%-5u %-7u %.6f\n",
+            results[i].job_id,
+            results[i].worker_id,
+            results[i].estimate);
     }
 
     double final_estimate = 0.0;
-    if (sim_type == SIM_PI) final_estimate = 4.0 * (double)total_aggregate / total_trials;
-    else if (sim_type == SIM_E) final_estimate = (double)total_aggregate / total_trials;
-    else if (sim_type == SIM_SQRT2) final_estimate = 2.0 * (double)total_aggregate / total_trials;
+    if (sim_type == SIM_PI) final_estimate = 4.0 * (double)total_aggregate / (double)total_trials;
+    else if (sim_type == SIM_E) final_estimate = (double)total_aggregate / (double)total_trials;
+    else final_estimate = 2.0 * (double)total_aggregate / (double)total_trials;
 
     printf("\nTotal Trials: %" PRIu64 "\n", total_trials);
+    printf("Total Aggregate: %" PRIu64 "\n", total_aggregate);
     printf("Final Combined Estimate: %.8f\n", final_estimate);
-}
+    printf("True Value: %.8f\n", true_value);
+    printf("Absolute Error: %.8f\n", fabs(final_estimate - true_value));
 
 int main(int argc, char *argv[]) {
     int n_workers = DEFAULT_WORKERS;
@@ -261,7 +278,6 @@ int main(int argc, char *argv[]) {
     }
 
     if (n_jobs == -1) n_jobs = n_workers * 3;
-
     printf("Starting Monte Carlo Simulator...\n");
     run_jobs(n_workers, n_jobs, trials, sim_type);
     return 0;
